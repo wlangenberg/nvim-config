@@ -61,6 +61,9 @@ require("lazy").setup({
   -- Git Fugitive
   'tpope/vim-fugitive',
 
+  -- Vim Commentary
+  'tpope/vim-commentary',
+
   -- Mason
   "williamboman/mason.nvim",
   "williamboman/mason-lspconfig.nvim",
@@ -128,7 +131,6 @@ lspconfig.tailwindcss.setup({
     init_options = { userLanguages = { templ = "html" } },
 })
 
-vim.api.nvim_set_keymap('n', '<leader>ci', '<cmd>lua vim.lsp.buf.hover()<CR>', { noremap = true, silent = true })
 
 vim.filetype.add({ extension = { templ = "templ" } })
 
@@ -206,6 +208,7 @@ vim.api.nvim_set_keymap('n', '<C-f>', ':NERDTreeFind<CR>', { noremap = true, sil
 -- LSP key mappings
 vim.api.nvim_set_keymap('n', 'gd', '<cmd>lua vim.lsp.buf.definition()<CR>', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('n', 'gr', '<cmd>lua vim.lsp.buf.references()<CR>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', '<leader>ci', '<cmd>lua vim.lsp.buf.hover()<CR>', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('n', 'K', '<cmd>lua vim.lsp.buf.hover()<CR>', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('n', '[d', '<cmd>lua vim.diagnostic.goto_prev()<CR>', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('n', ']d', '<cmd>lua vim.diagnostic.goto_next()<CR>', { noremap = true, silent = true })
