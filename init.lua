@@ -79,8 +79,11 @@ require("lazy").setup({
   'hrsh7th/cmp-path',
   'hrsh7th/cmp-cmdline',
   'L3MON4D3/LuaSnip',
-  'saadparwaiz1/cmp_luasnip'
+  'saadparwaiz1/cmp_luasnip',
+  'windwp/nvim-autopairs'
 })
+
+vim.g.go_def_mapping_enabled = 0
 
 -- Set color scheme
 vim.cmd[[colorscheme tokyonight]]
@@ -94,6 +97,9 @@ require("mason-lspconfig").setup({
     ensure_installed = { "tailwindcss", "html", "htmx", "templ", "gopls", "pyright", "tsserver" },
     automatic_installation = true,
 })
+
+-- Autopairs setup
+require('nvim-autopairs').setup{}
 
 -- LSP settings
 local lspconfig = require('lspconfig')
@@ -174,6 +180,13 @@ cmp.setup({
     { name = 'buffer' },
   })
 })
+
+-- Make autopairs and completion work together
+local cmp_autopairs = require('nvim-autopairs.completion.cmp')
+cmp.event:on(
+  'confirm_done',
+  cmp_autopairs.on_confirm_done()
+)
 
 -- Treesitter setup
 require('nvim-treesitter.configs').setup {
