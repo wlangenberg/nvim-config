@@ -58,6 +58,9 @@ require("lazy").setup({
   -- Diffview
   "sindrets/diffview.nvim",
 
+  -- Git Fugitive
+  'tpope/vim-fugitive',
+
   -- Mason
   "williamboman/mason.nvim",
   "williamboman/mason-lspconfig.nvim",
@@ -84,7 +87,10 @@ vim.o.completeopt = "menuone,noselect"
 
 -- Mason
 require("mason").setup()
-require("mason-lspconfig").setup()
+require("mason-lspconfig").setup({
+    ensure_installed = { "tailwindcss", "html", "htmx", "templ", "gopls", "pyright", "tsserver" },
+    automatic_installation = true,
+})
 
 -- LSP settings
 local lspconfig = require('lspconfig')
@@ -206,3 +212,4 @@ vim.api.nvim_set_keymap('n', ']d', '<cmd>lua vim.diagnostic.goto_next()<CR>', { 
 vim.api.nvim_set_keymap('n', '<leader>e', '<cmd>lua vim.diagnostic.open_float()<CR>', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('n', '<leader>q', '<cmd>lua vim.diagnostic.setloclist()<CR>', { noremap = true, silent = true })
 
+-- Fugitive
