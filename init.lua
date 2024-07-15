@@ -12,7 +12,15 @@ vim.opt.expandtab = true
 vim.opt.fixendofline = false
 
 -- Clipboard copy
-vim.api.nvim_set_keymap('v', '<leader>y', ':w !clip.exe<CR><CR>', { noremap = true, silent = true })
+local is_windows = vim.loop.os_uname().sysname == 'Windows_NT'
+
+if is_windows then
+  -- Windows/WSL specific keybinding
+  vim.api.nvim_set_keymap('v', '<leader>y', ':w !clip.exe<CR><CR>', { noremap = true, silent = true })
+else
+  -- Unix/Linux specific keybinding
+  vim.api.nvim_set_keymap('v', '<leader>y', '"*y', { noremap = true, silent = true })
+end
 
 -- Plugin manager setup
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
@@ -208,6 +216,7 @@ require('telescope').setup{
 
 -- Telescope key mappings
 vim.api.nvim_set_keymap('n', '<leader>ff', '<cmd>Telescope find_files<CR>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', '<leader>fw', '<cmd>Telescope find_files search_dir=.<CR>', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('n', '<leader>fg', '<cmd>Telescope live_grep<CR>', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('n', '<leader>fb', '<cmd>Telescope buffers<CR>', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('n', '<leader>fh', '<cmd>Telescope help_tags<CR>', { noremap = true, silent = true })
