@@ -10,11 +10,15 @@ vim.opt.tabstop = 4
 vim.opt.shiftwidth = 4
 vim.opt.expandtab = true
 vim.opt.fixendofline = false
+vim.opt.lazyredraw = true
+
+
 
 -- Clipboard copy
 local is_windows = vim.loop.os_uname().sysname == 'Windows_NT'
+local is_linux = vim.loop.os_uname().sysname == 'Linux'
 
-if is_windows then
+if is_windows or is_linux then
   -- Windows/WSL specific keybinding
   vim.api.nvim_set_keymap('v', '<leader>y', ':w !clip.exe<CR><CR>', { noremap = true, silent = true })
 else
@@ -52,9 +56,12 @@ require("lazy").setup({
   
   -- Telescope
   { 'nvim-telescope/telescope.nvim', tag = '0.1.8', dependencies = { 'nvim-lua/plenary.nvim' } },
+  { 'nvim-telescope/telescope-fzf-native.nvim', run = 'make' },
+  'nvim-telescope/telescope-symbols.nvim',
   
   -- Treesitter
   { 'nvim-treesitter/nvim-treesitter', run = ':TSUpdate' },
+  'nvim-treesitter/nvim-treesitter-context',
   
   -- Lualine
   'nvim-lualine/lualine.nvim',
@@ -204,6 +211,12 @@ require('nvim-treesitter.configs').setup {
   },
 }
 
+-- Treesitter-context setup
+require'treesitter-context'.setup{
+  enable = true,
+  throttle = true,
+}
+
 -- Lualine setup
 require('lualine').setup()
 
@@ -211,8 +224,18 @@ require('lualine').setup()
 require('telescope').setup{
   defaults = {
     file_ignore_patterns = { "node_modules", ".git/" },
-  }
+  },
+  extensions = {
+    fzf = {
+      fuzzy = true,
+      override_generic_sorter = true,
+      override_file_sorter = true,
+      case_mode = "smart_case",
+    },
+  },
 }
+
+pcall(require('telescope').load_extension, 'fzf')
 
 -- Telescope key mappings
 vim.api.nvim_set_keymap('n', '<leader>ff', '<cmd>Telescope find_files<CR>', { noremap = true, silent = true })
@@ -220,9 +243,13 @@ vim.api.nvim_set_keymap('n', '<leader>fw', '<cmd>Telescope find_files search_dir
 vim.api.nvim_set_keymap('n', '<leader>fg', '<cmd>Telescope live_grep<CR>', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('n', '<leader>fb', '<cmd>Telescope buffers<CR>', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('n', '<leader>fh', '<cmd>Telescope help_tags<CR>', { noremap = true, silent = true })
+-- vim.api.nvim_set_keymap('v', '<leader>qq', [[:<C-u>execute 'Telescope live_grep default_text=' . escape(@z, ' ')<CR>]], { noremap = true, silent = true })
+vim.api.nvim_set_keymap('v', '<leader>qq', '"zy:Telescope live_grep default_text=<C-r>z<CR>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', '<leader>fs', '<cmd>Telescope lsp_document_symbols<CR>', { noremap = true, silent = true })
+
 
 -- Key binding for NERDTree
-vim.api.nvim_set_keymap('n', '<leader>n', ':NERDTreeFocus<CR>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', '<leader>n', ':NERDTreeFind<CR>', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('n', '<C-n>', ':NERDTree<CR>', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('n', '<C-t>', ':NERDTreeToggle<CR>', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('n', '<C-f>', ':NERDTreeFind<CR>', { noremap = true, silent = true })
@@ -238,3 +265,4 @@ vim.api.nvim_set_keymap('n', '<leader>e', '<cmd>lua vim.diagnostic.open_float()<
 vim.api.nvim_set_keymap('n', '<leader>q', '<cmd>lua vim.diagnostic.setloclist()<CR>', { noremap = true, silent = true })
 
 -- Fugitive
+
