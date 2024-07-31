@@ -1,5 +1,5 @@
 -- Define leader key
-vim.g.mapleader = ","
+vim.g.mapleader = " "
 
 -- Basic settings
 vim.opt.relativenumber = true
@@ -21,9 +21,11 @@ local is_linux = vim.loop.os_uname().sysname == 'Linux'
 if is_windows or is_linux then
   -- Windows/WSL specific keybinding
   vim.api.nvim_set_keymap('v', '<leader>y', ':w !clip.exe<CR><CR>', { noremap = true, silent = true })
+  vim.api.nvim_set_keymap('n', '<leader>Y', ':.w !clip.exe<CR><CR>', { noremap = true, silent = true })
 else
   -- Unix/Linux specific keybinding
   vim.api.nvim_set_keymap('v', '<leader>y', '"*y', { noremap = true, silent = true })
+  vim.api.nvim_set_keymap('n', '<leader>Y', '"*Y', { noremap = true, silent = true })
 end
 
 -- Plugin manager setup
@@ -237,6 +239,27 @@ require('telescope').setup{
 
 pcall(require('telescope').load_extension, 'fzf')
 
+
+
+-- REMAPS
+
+-- greatest remap ever / ThePrimeagean
+vim.keymap.set("x", "<leader>p", [["_dP]])
+
+-- next greatest remap ever : asbjornHaland
+-- vim.keymap.set({"n", "v"}, "<leader>y", [["+y]])
+-- vim.keymap.set("n", "<leader>Y", [["+Y]])
+
+vim.keymap.set({"n", "v"}, "<leader>d", [["_d]])
+
+vim.keymap.set("n", "Q", "<nop>")
+vim.keymap.set("n", "<leader>f", vim.lsp.buf.format)
+
+vim.keymap.set("n", "<C-k>", "<cmd>cnext<CR>zz")
+vim.keymap.set("n", "<C-j>", "<cmd>cprev<CR>zz")
+vim.keymap.set("n", "<leader>k", "<cmd>lnext<CR>zz")
+vim.keymap.set("n", "<leader>j", "<cmd>lprev<CR>zz")
+
 -- Telescope key mappings
 vim.api.nvim_set_keymap('n', '<leader>ff', '<cmd>Telescope find_files<CR>', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('n', '<leader>fw', '<cmd>Telescope find_files search_dir=.<CR>', { noremap = true, silent = true })
@@ -255,7 +278,7 @@ vim.api.nvim_set_keymap('n', '<C-t>', ':NERDTreeToggle<CR>', { noremap = true, s
 vim.api.nvim_set_keymap('n', '<C-f>', ':NERDTreeFind<CR>', { noremap = true, silent = true })
 
 -- LSP key mappings
-vim.api.nvim_set_keymap('n', 'gd', '<cmd>lua vim.lsp.buf.definition()<CR>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', 'gd', '<cmd>lua vim.lsp.buf.definition()<CR>zz', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('n', 'gr', '<cmd>lua vim.lsp.buf.references()<CR>', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('n', '<leader>ci', '<cmd>lua vim.lsp.buf.hover()<CR>', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('n', 'K', '<cmd>lua vim.lsp.buf.hover()<CR>', { noremap = true, silent = true })
@@ -265,4 +288,9 @@ vim.api.nvim_set_keymap('n', '<leader>e', '<cmd>lua vim.diagnostic.open_float()<
 vim.api.nvim_set_keymap('n', '<leader>q', '<cmd>lua vim.diagnostic.setloclist()<CR>', { noremap = true, silent = true })
 
 -- Fugitive
+-- -- Remap ]c to jump to the next change and center the screen
+vim.api.nvim_set_keymap('n', ']c', ']czz', { noremap = true, silent = true })
+
+-- Remap [c to jump to the previous change and center the screen
+vim.api.nvim_set_keymap('n', '[c', '[czz', { noremap = true, silent = true })
 
