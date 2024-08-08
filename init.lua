@@ -18,15 +18,15 @@ vim.opt.lazyredraw = true
 local is_windows = vim.loop.os_uname().sysname == 'Windows_NT'
 local is_linux = vim.loop.os_uname().sysname == 'Linux'
 
-if is_windows or is_linux then
-  -- Windows/WSL specific keybinding
-  vim.api.nvim_set_keymap('v', '<leader>y', ':w !clip.exe<CR><CR>', { noremap = true, silent = true })
-  vim.api.nvim_set_keymap('n', '<leader>Y', ':.w !clip.exe<CR><CR>', { noremap = true, silent = true })
-else
+-- if false or is_windows or is_linux then
+--   -- Windows/WSL specific keybinding
+--   vim.api.nvim_set_keymap('v', '<leader>y', ':w !clip.exe<CR><CR>', { noremap = true, silent = true })
+--   vim.api.nvim_set_keymap('n', '<leader>Y', ':.w !clip.exe<CR><CR>', { noremap = true, silent = true })
+-- else
   -- Unix/Linux specific keybinding
-  vim.api.nvim_set_keymap('v', '<leader>y', '"*y', { noremap = true, silent = true })
-  vim.api.nvim_set_keymap('n', '<leader>Y', '"*Y', { noremap = true, silent = true })
-end
+vim.api.nvim_set_keymap('v', '<leader>y', '"*y', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', '<leader>Y', '"*Y', { noremap = true, silent = true })
+-- end
 
 -- Plugin manager setup
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
@@ -43,16 +43,132 @@ end
 vim.opt.rtp:prepend(lazypath)
 
 require("lazy").setup({
-  -- Remove coc.nvim
-  -- { 'neoclide/coc.nvim', branch = 'release' },
+    defaults = { lazy = true },
+	performance = {
+		cache = {
+			enabled = true,
+		},
+		rtp = {
+			disabled_plugins = {
+				"netrwPlugin",
+				"gzip",
+				"tarPlugin",
+				"tohtml",
+				"tutor",
+				"zipPlugin",
+			},
+		},
+	},
+	debug = false,
+ 
+    {
+        'mfussenegger/nvim-dap',
+        event = "InsertEnter",  -- Lazy-load DAP when entering insert mode
+        dependencies = {
+            {
+                'mfussenegger/nvim-dap-python',
+                config = function()
+                    -- Dynamically determine the Python path
+                    local python_path = vim.fn.system('which python3'):gsub("\n", "") -- Get Python path and remove trailing newline
+
+                    require('dap-python').setup(python_path)
+                end,
+            },
+            {
+                'rcarriga/nvim-dap-ui',
+                dependencies = {
+                    'nvim-neotest/nvim-nio',  -- Adding nvim-nio as a dependency
+                },
+                config = function()
+                    require('dapui').setup()
+                end,
+            },
+            {
+                'theHamsta/nvim-dap-virtual-text',
+                config = function()
+                    require('nvim-dap-virtual-text').setup()
+                end,
+            }
+        },
+        config = function()
+            -- Key mappings for DAP
+            vim.api.nvim_set_keymap('n', '<F4>', ':lua require(\'dapui\').toggle()<CR>', { noremap = true, silent = true })
+            vim.api.nvim_set_keymap('n', '<F5>', ':lua require\'dap\'.continue()<CR>', { noremap = true, silent = true })
+            vim.api.nvim_set_keymap('n', '<F10>', ':lua require\'dap\'.step_over()<CR>', { noremap = true, silent = true })
+            vim.api.nvim_set_keymap('n', '<F11>', ':lua require\'dap\'.step_into()<CR>', { noremap = true, silent = true })
+            vim.api.nvim_set_keymap('n', '<F12>', ':lua require\'dap\'.step_out()<CR>', { noremap = true, silent = true })
+            vim.api.nvim_set_keymap('n', '<leader>b', ':lua require\'dap\'.toggle_breakpoint()<CR>', { noremap = true, silent = true })
+            vim.api.nvim_set_keymap('n', '<leader>B', ':lua require\'dap\'.set_breakpoint(vim.fn.input("Breakpoint condition: "))<CR>', { noremap = true, silent = true })
+            vim.api.nvim_set_keymap('n', '<leader>lp', ':lua require\'dap\'.set_breakpoint(nil, nil, vim.fn.input("Log point message: "))<CR>', { noremap = true, silent = true })
+            vim.api.nvim_set_keymap('n', '<leader>dr', ':lua require\'dap\'.repl.open()<CR>', { noremap = true, silent = true })
+            vim.api.nvim_set_keymap('n', '<leader>dl', ':lua require\'dap\'.run_last()<CR>', { noremap = true, silent = true })
+        end,
+    },
+  -- Lazy-load NERDTree
+  {
+    'preservim/nerdtree',
+    cmd = { "NERDTreeToggle", "NERDTreeFocus", "NERDTreeFind" },
+    keys = {
+      { "<leader>n", ":NERDTreeFind<CR>", noremap = true, silent = true },
+      { "<C-n>", ":NERDTree<CR>", noremap = true, silent = true },
+      { "<C-t>", ":NERDTreeToggle<CR>", noremap = true, silent = true },
+      { "<C-f>", ":NERDTreeFind<CR>", noremap = true, silent = true }
+    },
+  },
   
-  -- NERDTree
-  'preservim/nerdtree',
+  -- Lazy-load nvim-cmp and related plugins
+  {
+    'hrsh7th/nvim-cmp',
+    event = "InsertEnter",  -- Load when entering insert mode
+    dependencies = {
+      'hrsh7th/cmp-nvim-lsp',
+      'hrsh7th/cmp-buffer',
+      'hrsh7th/cmp-path',
+      'hrsh7th/cmp-cmdline',
+      'L3MON4D3/LuaSnip',
+      'saadparwaiz1/cmp_luasnip',
+    }
+  },
   
   -- fzf
   { 'junegunn/fzf', run = function() vim.fn['fzf#install']() end },
   'junegunn/fzf.vim',
-  
+
+  -- Add vim-obsession
+  {
+      "tpope/vim-obsession",
+      config = function()
+          -- Optional configuration can be added here
+      end,
+  },
+
+  -- Vim surround for adding stuff around selections
+  {
+    "tpope/vim-surround",
+    event = "VeryLazy"  -- This ensures the plugin is only loaded when needed
+  },
+
+  -- Vim plugin for handling with databases
+  {
+      "tpope/vim-dadbod",
+      event = "VeryLazy"  -- Lazy load vim-dadbod too
+  },
+  {
+      "kristijanhusak/vim-dadbod-ui",
+      requires = {"tpope/vim-dadbod"},
+      config = function()
+          -- Optional: Set keybindings or other configurations
+      end
+  },
+  {
+      "kristijanhusak/vim-dadbod-completion",
+      requires = {"tpope/vim-dadbod"},
+      config = function()
+          -- Optional: Set up completion configurations
+      end
+  },
+
+
   -- vim-go
   { 'fatih/vim-go', run = ':GoUpdateBinaries' },
   
@@ -82,22 +198,20 @@ require("lazy").setup({
   'tpope/vim-commentary',
 
   -- Mason
-  "williamboman/mason.nvim",
-  "williamboman/mason-lspconfig.nvim",
-  "neovim/nvim-lspconfig",
+  {
+    "williamboman/mason.nvim",
+    event = "BufReadPre",  -- Load Mason when a buffer is read
+    dependencies = {
+      "williamboman/mason-lspconfig.nvim",
+      "neovim/nvim-lspconfig",
+    }
+  },
 
-  -- LSP Config
-  'neovim/nvim-lspconfig',
-
-  -- Autocompletion
-  'hrsh7th/nvim-cmp',
-  'hrsh7th/cmp-nvim-lsp',
-  'hrsh7th/cmp-buffer',
-  'hrsh7th/cmp-path',
-  'hrsh7th/cmp-cmdline',
-  'L3MON4D3/LuaSnip',
-  'saadparwaiz1/cmp_luasnip',
-  'windwp/nvim-autopairs'
+  -- Autopairs (also lazy-load)
+  {
+    'windwp/nvim-autopairs',
+    event = "InsertEnter",  -- Load when entering insert mode
+  }
 })
 
 vim.g.go_def_mapping_enabled = 0
@@ -191,6 +305,7 @@ cmp.setup({
     end, { 'i', 's' }),
   },
   sources = cmp.config.sources({
+    { name = 'vim-dadbod-completion' },
     { name = 'nvim_lsp' },
     { name = 'luasnip' },
   }, {
@@ -251,12 +366,13 @@ vim.keymap.set("x", "<leader>p", [["_dP]])
 -- vim.keymap.set("n", "<leader>Y", [["+Y]])
 
 vim.keymap.set({"n", "v"}, "<leader>d", [["_d]])
-
+vim.keymap.set("i", "<C-c>", "<Esc>")
 vim.keymap.set("n", "Q", "<nop>")
 vim.keymap.set("n", "<leader>f", vim.lsp.buf.format)
 
 vim.keymap.set("n", "<C-k>", "<cmd>cnext<CR>zz")
 vim.keymap.set("n", "<C-j>", "<cmd>cprev<CR>zz")
+-- vim.keymap.set("n", "<C-l>", "<cmd>cclose<CR>zz")
 vim.keymap.set("n", "<leader>k", "<cmd>lnext<CR>zz")
 vim.keymap.set("n", "<leader>j", "<cmd>lprev<CR>zz")
 
@@ -293,4 +409,12 @@ vim.api.nvim_set_keymap('n', ']c', ']czz', { noremap = true, silent = true })
 
 -- Remap [c to jump to the previous change and center the screen
 vim.api.nvim_set_keymap('n', '[c', '[czz', { noremap = true, silent = true })
+
+
+-- Auto-source Session.vim if it exists
+local session_file = vim.fn.getcwd() .. "/Session.vim"
+
+if vim.fn.filereadable(session_file) == 1 then
+  vim.cmd("source " .. session_file)
+end
 
