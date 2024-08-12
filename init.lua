@@ -12,8 +12,6 @@ vim.opt.expandtab = true
 vim.opt.fixendofline = false
 vim.opt.lazyredraw = true
 
-
-
 -- Clipboard copy
 local is_windows = vim.loop.os_uname().sysname == 'Windows_NT'
 local is_linux = vim.loop.os_uname().sysname == 'Linux'
@@ -60,7 +58,6 @@ require("lazy").setup({
 		},
 	},
 	debug = false,
- 
     {
         'mfussenegger/nvim-dap',
         event = "InsertEnter",  -- Lazy-load DAP when entering insert mode
@@ -109,7 +106,6 @@ require("lazy").setup({
     'preservim/nerdtree',
     cmd = { "NERDTreeToggle", "NERDTreeFocus", "NERDTreeFind" },
     keys = {
-      { "<leader>n", ":NERDTreeFind<CR>", noremap = true, silent = true },
       { "<C-n>", ":NERDTree<CR>", noremap = true, silent = true },
       { "<C-t>", ":NERDTreeToggle<CR>", noremap = true, silent = true },
       { "<C-f>", ":NERDTreeFind<CR>", noremap = true, silent = true }
@@ -149,25 +145,9 @@ require("lazy").setup({
   },
 
   -- Vim plugin for handling with databases
-  {
-      "tpope/vim-dadbod",
-      event = "VeryLazy"  -- Lazy load vim-dadbod too
-  },
-  {
-      "kristijanhusak/vim-dadbod-ui",
-      requires = {"tpope/vim-dadbod"},
-      config = function()
-          -- Optional: Set keybindings or other configurations
-      end
-  },
-  {
-      "kristijanhusak/vim-dadbod-completion",
-      requires = {"tpope/vim-dadbod"},
-      config = function()
-          -- Optional: Set up completion configurations
-      end
-  },
-
+  { "tpope/vim-dadbod" },
+  { 'kristijanhusak/vim-dadbod-ui' },
+  { 'kristijanhusak/vim-dadbod-completion', ft = { 'sql', 'mysql', 'plsql' }, lazy = true },
 
   -- vim-go
   { 'fatih/vim-go', run = ':GoUpdateBinaries' },
@@ -225,7 +205,7 @@ vim.o.completeopt = "menuone,noselect"
 -- Mason
 require("mason").setup()
 require("mason-lspconfig").setup({
-    ensure_installed = { "tailwindcss", "html", "htmx", "templ", "gopls", "pyright", "tsserver" },
+    ensure_installed = { "tailwindcss", "html", "htmx", "templ", "gopls", "pyright", "tsserver", "emmet_language_server" },
     automatic_installation = true,
 })
 
@@ -237,11 +217,17 @@ local lspconfig = require('lspconfig')
 local cmp = require('cmp')
 local luasnip = require('luasnip')
 
+local capabilities = require('cmp_nvim_lsp').default_capabilities()
+local on_attach = function(client, bufnr)
+    -- Custom on_attach logic here
+end
+
 -- LSP servers setup
 lspconfig.gopls.setup{}
+
 lspconfig.pyright.setup{}
+
 lspconfig.tsserver.setup{}
--- lspconfig.html.setup{}
 
 lspconfig.templ.setup({
     on_attach = on_attach,
@@ -261,6 +247,11 @@ lspconfig.htmx.setup({
     filetypes = { "html", "templ" },
 })
 
+lspconfig.emmet_language_server.setup({
+  filetypes = { "css", "eruby", "html", "javascript", "javascriptreact", "less", "sass", "scss", "pug", "typescriptreact", "htmx" },
+  init_options = {},
+})
+
 lspconfig.tailwindcss.setup({
     on_attach = on_attach,
     capabilities = capabilities,
@@ -268,9 +259,7 @@ lspconfig.tailwindcss.setup({
     init_options = { userLanguages = { templ = "html" } },
 })
 
-
 vim.filetype.add({ extension = { templ = "templ" } })
-
 
 -- nvim-cmp setup
 cmp.setup({
@@ -305,12 +294,19 @@ cmp.setup({
     end, { 'i', 's' }),
   },
   sources = cmp.config.sources({
-    { name = 'vim-dadbod-completion' },
     { name = 'nvim_lsp' },
     { name = 'luasnip' },
   }, {
     { name = 'buffer' },
   })
+})
+
+-- -- Add cmp for sql with vim-dadbod-completion
+cmp.setup.filetype('sql', {
+    sources = {
+        { name = 'vim-dadbod-completion'},
+        { name = 'buffer' },
+    },
 })
 
 -- Make autopairs and completion work together
@@ -354,16 +350,13 @@ require('telescope').setup{
 
 pcall(require('telescope').load_extension, 'fzf')
 
-
-
 -- REMAPS
+-- Add <leader>t as create new tab 
+vim.api.nvim_set_keymap('n', '<leader>t', ':tabnew<CR>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', '<leader>q', ':bd<CR>', { noremap = true, silent = true })
 
 -- greatest remap ever / ThePrimeagean
 vim.keymap.set("x", "<leader>p", [["_dP]])
-
--- next greatest remap ever : asbjornHaland
--- vim.keymap.set({"n", "v"}, "<leader>y", [["+y]])
--- vim.keymap.set("n", "<leader>Y", [["+Y]])
 
 vim.keymap.set({"n", "v"}, "<leader>d", [["_d]])
 vim.keymap.set("i", "<C-c>", "<Esc>")
@@ -372,7 +365,6 @@ vim.keymap.set("n", "<leader>f", vim.lsp.buf.format)
 
 vim.keymap.set("n", "<C-k>", "<cmd>cnext<CR>zz")
 vim.keymap.set("n", "<C-j>", "<cmd>cprev<CR>zz")
--- vim.keymap.set("n", "<C-l>", "<cmd>cclose<CR>zz")
 vim.keymap.set("n", "<leader>k", "<cmd>lnext<CR>zz")
 vim.keymap.set("n", "<leader>j", "<cmd>lprev<CR>zz")
 
@@ -382,10 +374,8 @@ vim.api.nvim_set_keymap('n', '<leader>fw', '<cmd>Telescope find_files search_dir
 vim.api.nvim_set_keymap('n', '<leader>fg', '<cmd>Telescope live_grep<CR>', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('n', '<leader>fb', '<cmd>Telescope buffers<CR>', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('n', '<leader>fh', '<cmd>Telescope help_tags<CR>', { noremap = true, silent = true })
--- vim.api.nvim_set_keymap('v', '<leader>qq', [[:<C-u>execute 'Telescope live_grep default_text=' . escape(@z, ' ')<CR>]], { noremap = true, silent = true })
 vim.api.nvim_set_keymap('v', '<leader>qq', '"zy:Telescope live_grep default_text=<C-r>z<CR>', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('n', '<leader>fs', '<cmd>Telescope lsp_document_symbols<CR>', { noremap = true, silent = true })
-
 
 -- Key binding for NERDTree
 vim.api.nvim_set_keymap('n', '<leader>n', ':NERDTreeFind<CR>', { noremap = true, silent = true })
@@ -401,7 +391,7 @@ vim.api.nvim_set_keymap('n', 'K', '<cmd>lua vim.lsp.buf.hover()<CR>', { noremap 
 vim.api.nvim_set_keymap('n', '[d', '<cmd>lua vim.diagnostic.goto_prev()<CR>', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('n', ']d', '<cmd>lua vim.diagnostic.goto_next()<CR>', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('n', '<leader>e', '<cmd>lua vim.diagnostic.open_float()<CR>', { noremap = true, silent = true })
-vim.api.nvim_set_keymap('n', '<leader>q', '<cmd>lua vim.diagnostic.setloclist()<CR>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', '<leader>x', '<cmd>lua vim.diagnostic.setloclist()<CR>', { noremap = true, silent = true })
 
 -- Fugitive
 -- -- Remap ]c to jump to the next change and center the screen
