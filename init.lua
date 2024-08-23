@@ -3,6 +3,8 @@ vim.g.mapleader = " "
 
 -- Basic settings
 vim.opt.relativenumber = true
+vim.opt.number = true
+vim.opt.termguicolors = true
 vim.opt.errorbells = false
 vim.opt.title = true
 vim.opt.autoindent = true
@@ -165,7 +167,7 @@ require("lazy").setup({
   'nvim-lualine/lualine.nvim',
   'kyazdani42/nvim-web-devicons', -- optional, for file icons
 
-  -- Tokyo Night color scheme
+  -- Color scheme
   'folke/tokyonight.nvim',
 
   -- Diffview
@@ -195,17 +197,13 @@ require("lazy").setup({
 })
 
 vim.g.go_def_mapping_enabled = 0
-
--- Set color scheme
-vim.cmd[[colorscheme tokyonight]]
-
--- Disable native completion
+require('tokyonight').load()
 vim.o.completeopt = "menuone,noselect"
 
 -- Mason
 require("mason").setup()
 require("mason-lspconfig").setup({
-    ensure_installed = { "tailwindcss", "html", "htmx", "templ", "gopls", "pyright", "tsserver", "emmet_language_server" },
+    ensure_installed = { "tailwindcss", "html", "htmx", "templ", "gopls", "pyright", "tsserver", "emmet_language_server", "cssls" },
     automatic_installation = true,
 })
 
@@ -229,6 +227,20 @@ lspconfig.pyright.setup{}
 
 lspconfig.tsserver.setup{}
 
+lspconfig.cssls.setup{
+    on_attach = on_attach,
+    capabilities = capabilities,
+    filetypes = { "css" }
+}
+
+lspconfig.jsonls.setup{}
+
+lspconfig.prettier.setup{
+    on_attach = on_attach,
+    capabilities = capabilities,
+    filetypes = { "css" }
+}
+
 lspconfig.templ.setup({
     on_attach = on_attach,
     capabilities = capabilities,
@@ -248,7 +260,7 @@ lspconfig.htmx.setup({
 })
 
 lspconfig.emmet_language_server.setup({
-  filetypes = { "css", "eruby", "html", "javascript", "javascriptreact", "less", "sass", "scss", "pug", "typescriptreact", "htmx" },
+  filetypes = { "eruby", "html", "javascript", "javascriptreact", "less", "sass", "scss", "pug", "typescriptreact", "htmx" },
   init_options = {},
 })
 
@@ -331,7 +343,30 @@ require'treesitter-context'.setup{
 }
 
 -- Lualine setup
-require('lualine').setup()
+-- require('lualine').setup()
+require('lualine').setup {
+  options = {
+    theme = 'tokyonight'
+  },
+  sections = {
+    lualine_a = {'mode'},
+    lualine_b = {'diff', 'diagnostics'},  -- Removed 'branch' from here
+    lualine_c = {'filename'},
+    lualine_x = {'encoding', 'fileformat', 'filetype'},
+    lualine_y = {'progress'},
+    lualine_z = {'location'}
+  },
+  -- You can also customize the inactive sections similarly if needed
+  inactive_sections = {
+    lualine_a = {},
+    lualine_b = {},
+    lualine_c = {'filename'},
+    lualine_x = {'location'},
+    lualine_y = {},
+    lualine_z = {}
+  },
+  -- The rest of your configuration
+}
 
 -- Telescope setup
 require('telescope').setup{
@@ -364,12 +399,13 @@ vim.api.nvim_set_keymap('n', '<leader>h', 'gT', { noremap = true, silent = true 
 vim.keymap.set("x", "<leader>p", [["_dP]])
 
 vim.keymap.set({"n", "v"}, "<leader>d", [["_d]])
-vim.api.nvim_set_keymap('i', '<C-c>', '<Esc>', { noremap = true, silent = true })
+-- vim.api.nvim_set_keymap('i', '<C-c>', '<Esc>', { noremap = true, silent = true })
+-- vim.keymap.del('i', '<C-c>')
 vim.keymap.set("n", "Q", "<nop>")
 vim.keymap.set("n", "<leader>fm", vim.lsp.buf.format)
 
-vim.keymap.set("n", "<C-k>", "<cmd>cnext<CR>zz")
-vim.keymap.set("n", "<C-j>", "<cmd>cprev<CR>zz")
+vim.keymap.set("n", "<C-j>", "<cmd>cnext<CR>zz")
+vim.keymap.set("n", "<C-k>", "<cmd>cprev<CR>zz")
 vim.keymap.set("n", "<leader>k", "<cmd>lnext<CR>zz")
 vim.keymap.set("n", "<leader>j", "<cmd>lprev<CR>zz")
 
@@ -389,11 +425,14 @@ vim.api.nvim_set_keymap('n', '<C-t>', ':NERDTreeToggle<CR>', { noremap = true, s
 vim.api.nvim_set_keymap('n', '<C-f>', ':NERDTreeFind<CR>', { noremap = true, silent = true })
 
 -- LSP key mappings
-vim.api.nvim_set_keymap('n', 'gd', '<cmd>lua vim.lsp.buf.definition()<CR>zz', { noremap = true, silent = true })
-vim.api.nvim_set_keymap('n', 'gr', '<cmd>lua vim.lsp.buf.references()<CR>', { noremap = true, silent = true })
+-- vim.api.nvim_set_keymap('n', 'gd', '<cmd>lua vim.lsp.buf.definition()<CR>zz', { noremap = true, silent = true })
+-- vim.api.nvim_set_keymap('n', 'gr', '<cmd>lua vim.lsp.buf.references()<CR>', { noremap = true, silent = true })
+vim.keymap.set('n', 'gd', require('telescope.builtin').lsp_definitions)
+vim.keymap.set('n', 'gr', require('telescope.builtin').lsp_references)
+vim.keymap.set('n', 'K', vim.lsp.buf.hover)
 vim.api.nvim_set_keymap('n', '<leader>ci', '<cmd>lua vim.lsp.buf.hover()<CR>', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('n', '<leader>vrn', '<cmd>lua vim.lsp.buf.rename()<CR>', { noremap = true, silent = true })
-vim.api.nvim_set_keymap('n', 'K', '<cmd>lua vim.lsp.buf.hover()<CR>', { noremap = true, silent = true })
+-- vim.api.nvim_set_keymap('n', 'K', '<cmd>lua vim.lsp.buf.hover()<CR>', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('n', '[d', '<cmd>lua vim.diagnostic.goto_prev()<CR>', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('n', ']d', '<cmd>lua vim.diagnostic.goto_next()<CR>', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('n', '<leader>vd', '<cmd>lua vim.diagnostic.enable(not vim.diagnostic.is_enabled())<CR>', { noremap = true, silent = true })
@@ -409,9 +448,17 @@ vim.api.nvim_set_keymap('n', '[c', '[czz', { noremap = true, silent = true })
 
 
 -- Auto-source Session.vim if it exists
-local session_file = vim.fn.getcwd() .. "/Session.vim"
+-- local session_file = vim.fn.getcwd() .. "/Session.vim"
 
-if vim.fn.filereadable(session_file) == 1 then
-  vim.cmd("source " .. session_file)
-end
+-- if vim.fn.filereadable(session_file) == 1 then
+--   vim.cmd("source " .. session_file)
+-- end
 
+-- Autocommands
+vim.api.nvim_create_autocmd('TextYankPost', {
+    desc='Highlight yanked text',
+    group=vim.api.nvim_create_augroup('kickstart-highlight-group', { clear = true }),
+    callback = function()
+        vim.highlight.on_yank()
+    end,
+})
