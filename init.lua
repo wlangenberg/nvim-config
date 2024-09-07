@@ -13,20 +13,14 @@ vim.opt.shiftwidth = 4
 vim.opt.expandtab = true
 vim.opt.fixendofline = false
 vim.opt.lazyredraw = true
+vim.g.loaded_netrw = 1
+vim.g.loaded_netrwPlugin = 1
 
 -- Clipboard copy
 local is_windows = vim.loop.os_uname().sysname == 'Windows_NT'
 local is_linux = vim.loop.os_uname().sysname == 'Linux'
-
--- if false or is_windows or is_linux then
---   -- Windows/WSL specific keybinding
---   vim.api.nvim_set_keymap('v', '<leader>y', ':w !clip.exe<CR><CR>', { noremap = true, silent = true })
---   vim.api.nvim_set_keymap('n', '<leader>Y', ':.w !clip.exe<CR><CR>', { noremap = true, silent = true })
--- else
-  -- Unix/Linux specific keybinding
 vim.api.nvim_set_keymap('v', '<leader>y', '"*y', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('n', '<leader>Y', '"*Y', { noremap = true, silent = true })
--- end
 
 -- Plugin manager setup
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
@@ -62,13 +56,12 @@ require("lazy").setup({
 	debug = false,
     {
         'mfussenegger/nvim-dap',
-        event = "InsertEnter",  -- Lazy-load DAP when entering insert mode
+        event = "InsertEnter",
         dependencies = {
             {
                 'mfussenegger/nvim-dap-python',
                 config = function()
-                    -- Dynamically determine the Python path
-                    local python_path = vim.fn.system('which python3'):gsub("\n", "") -- Get Python path and remove trailing newline
+                    local python_path = vim.fn.system('which python3'):gsub("\n", "")
 
                     require('dap-python').setup(python_path)
                 end,
@@ -76,7 +69,7 @@ require("lazy").setup({
             {
                 'rcarriga/nvim-dap-ui',
                 dependencies = {
-                    'nvim-neotest/nvim-nio',  -- Adding nvim-nio as a dependency
+                    'nvim-neotest/nvim-nio',
                 },
                 config = function()
                     require('dapui').setup()
@@ -103,17 +96,16 @@ require("lazy").setup({
             vim.api.nvim_set_keymap('n', '<leader>dl', ':lua require\'dap\'.run_last()<CR>', { noremap = true, silent = true })
         end,
     },
-  -- Lazy-load NERDTree
+
   {
-    'preservim/nerdtree',
-    cmd = { "NERDTreeToggle", "NERDTreeFocus", "NERDTreeFind" },
-    keys = {
-      { "<C-n>", ":NERDTree<CR>", noremap = true, silent = true },
-      { "<C-t>", ":NERDTreeToggle<CR>", noremap = true, silent = true },
-      { "<C-f>", ":NERDTreeFind<CR>", noremap = true, silent = true }
-    },
+      "nvim-tree/nvim-tree.lua",
+      version = "*",
+      lazy = false,
+      dependencies = {
+          "nvim-tree/nvim-web-devicons",
+      },
   },
-  
+
   -- Lazy-load nvim-cmp and related plugins
   {
     'hrsh7th/nvim-cmp',
@@ -133,17 +125,11 @@ require("lazy").setup({
   'junegunn/fzf.vim',
 
   -- Add vim-obsession
-  {
-      "tpope/vim-obsession",
-      config = function()
-          -- Optional configuration can be added here
-      end,
-  },
+  "tpope/vim-obsession",
 
-  -- Vim surround for adding stuff around selections
   {
     "tpope/vim-surround",
-    event = "VeryLazy"  -- This ensures the plugin is only loaded when needed
+    event = "VeryLazy"
   },
 
   -- Vim plugin for handling with databases
@@ -210,6 +196,59 @@ require("mason-lspconfig").setup({
 -- Autopairs setup
 require('nvim-autopairs').setup{}
 
+local function nvim_tree_on_attach(bufnr)
+    local api = require('nvim-tree.api')
+
+    local function opts(desc)
+        return { desc = 'nvim-tree: ' .. desc, buffer = bufnr, noremap = true, silent = true, nowait = true }
+    end
+
+    api.config.mappings.default_on_attach(bufnr)
+    vim.keymap.del('n', '<C-]>', { buffer = bufnr })
+    vim.keymap.del('n', 'C', { buffer = bufnr })
+    vim.keymap.set('n', 'C', api.tree.change_root_to_node, opts('CD'))
+
+end
+
+require("nvim-tree").setup {
+    on_attach = nvim_tree_on_attach,
+    sort = {
+        sorter = "case_sensitive",
+    },
+    view = {
+        centralize_selection = true,
+        float = {
+            enable = true,             -- Enable floating window
+            quit_on_focus_loss = true,
+            open_win_config = {
+                relative = "editor",     -- Relative to the entire editor
+                border = "rounded",      -- Rounded border style for aesthetics
+                width = vim.fn.round(vim.o.columns * 0.7),  -- 70% of the screen width
+                height = vim.fn.round(vim.o.lines * 0.8),   -- 80% of the screen height
+                row = vim.fn.round((vim.o.lines - vim.fn.round(vim.o.lines * 0.8)) / 2),  -- Center the row
+                col = vim.fn.round((vim.o.columns - vim.fn.round(vim.o.columns * 0.7)) / 2), -- Center the column
+            },
+        },
+        width = 30,
+    },
+    actions = {
+        change_dir = {
+            enable = true,                -- Enable the feature to change OS working directory
+            global = true,                -- Set this to true to change the global working directory
+            restrict_above_cwd = false,   -- Allow directory changes to parent directories
+        },
+    },
+    renderer = {
+        group_empty = true,
+    },
+    filters = {
+        dotfiles = true,
+    },
+    live_filter = {
+        always_show_folders = false,
+    },
+}
+
 -- LSP settings
 local lspconfig = require('lspconfig')
 local cmp = require('cmp')
@@ -223,7 +262,10 @@ end
 -- LSP servers setup
 lspconfig.gopls.setup{}
 
-lspconfig.pyright.setup{}
+lspconfig.pyright.setup{
+    on_attach = on_attach,
+    capabilities = capabilities
+}
 
 lspconfig.tsserver.setup{}
 
@@ -234,12 +276,6 @@ lspconfig.cssls.setup{
 }
 
 lspconfig.jsonls.setup{}
-
-lspconfig.prettier.setup{
-    on_attach = on_attach,
-    capabilities = capabilities,
-    filetypes = { "css" }
-}
 
 lspconfig.templ.setup({
     on_attach = on_attach,
@@ -418,11 +454,12 @@ vim.api.nvim_set_keymap('n', '<leader>fh', '<cmd>Telescope help_tags<CR>', { nor
 vim.api.nvim_set_keymap('v', '<leader>qq', '"zy:Telescope live_grep default_text=<C-r>z<CR>', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('n', '<leader>fs', '<cmd>Telescope lsp_document_symbols<CR>', { noremap = true, silent = true })
 
--- Key binding for NERDTree
-vim.api.nvim_set_keymap('n', '<leader>n', ':NERDTreeFind<CR>', { noremap = true, silent = true })
-vim.api.nvim_set_keymap('n', '<C-n>', ':NERDTree<CR>', { noremap = true, silent = true })
-vim.api.nvim_set_keymap('n', '<C-t>', ':NERDTreeToggle<CR>', { noremap = true, silent = true })
-vim.api.nvim_set_keymap('n', '<C-f>', ':NERDTreeFind<CR>', { noremap = true, silent = true })
+-- Key binding for NvimTree
+-- vim.api.nvim_set_keymap('n', '<leader>n', ':NvimTreeFind<CR>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', '<C-n>', ':NvimTreeToggle<CR>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', '<C-t>', ':NvimTreeToggle<CR>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', '<C-f>', ':NvimTreeFindFile<CR>', { noremap = true, silent = true })
+
 
 -- LSP key mappings
 -- vim.api.nvim_set_keymap('n', 'gd', '<cmd>lua vim.lsp.buf.definition()<CR>zz', { noremap = true, silent = true })
@@ -445,14 +482,6 @@ vim.api.nvim_set_keymap('n', ']c', ']czz', { noremap = true, silent = true })
 
 -- Remap [c to jump to the previous change and center the screen
 vim.api.nvim_set_keymap('n', '[c', '[czz', { noremap = true, silent = true })
-
-
--- Auto-source Session.vim if it exists
--- local session_file = vim.fn.getcwd() .. "/Session.vim"
-
--- if vim.fn.filereadable(session_file) == 1 then
---   vim.cmd("source " .. session_file)
--- end
 
 -- Autocommands
 vim.api.nvim_create_autocmd('TextYankPost', {
