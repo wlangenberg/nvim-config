@@ -15,6 +15,7 @@ vim.opt.fixendofline = false
 vim.opt.lazyredraw = true
 vim.g.loaded_netrw = 1
 vim.g.loaded_netrwPlugin = 1
+vim.g.omni_sql_no_default_maps = 1
 
 -- Clipboard copy
 local is_windows = vim.loop.os_uname().sysname == 'Windows_NT'
@@ -139,6 +140,9 @@ require("lazy").setup({
 
   -- vim-go
   { 'fatih/vim-go', run = ':GoUpdateBinaries' },
+
+  -- zen mode B)
+  "folke/zen-mode.nvim",
   
   -- Telescope
   { 'nvim-telescope/telescope.nvim', tag = '0.1.8', dependencies = { 'nvim-lua/plenary.nvim' } },
@@ -189,8 +193,26 @@ vim.o.completeopt = "menuone,noselect"
 -- Mason
 require("mason").setup()
 require("mason-lspconfig").setup({
-    ensure_installed = { "tailwindcss", "html", "htmx", "templ", "gopls", "pyright", "tsserver", "emmet_language_server", "cssls" },
+    ensure_installed = { "tailwindcss", "html", "htmx", "templ", "gopls", "pyright", "ts_ls","lua_ls", "emmet_language_server", "cssls" },
     automatic_installation = true,
+})
+
+-- Zenmode
+require("zen-mode").setup({
+    window = {
+        width = 0.8,
+        options = {
+            number = false, -- Disable line numbers
+            relativenumber = false, -- Disable relative numbers
+            cursorline = false, -- Disable cursorline
+        },
+    },
+    plugins = {
+        options = {
+            latstatus = 0,
+        },
+        tmux = { enabled = true },
+    },
 })
 
 -- Autopairs setup
@@ -267,7 +289,7 @@ lspconfig.pyright.setup{
     capabilities = capabilities
 }
 
-lspconfig.tsserver.setup{}
+lspconfig.ts_ls.setup{}
 
 lspconfig.cssls.setup{
     on_attach = on_attach,
@@ -276,6 +298,8 @@ lspconfig.cssls.setup{
 }
 
 lspconfig.jsonls.setup{}
+
+lspconfig.lua_ls.setup{}
 
 lspconfig.templ.setup({
     on_attach = on_attach,
