@@ -301,6 +301,12 @@ lspconfig.jsonls.setup{}
 
 lspconfig.lua_ls.setup{}
 
+lspconfig.sqlls.setup({
+  on_attach = on_attach,
+  filetypes = {"sql", "mysql"};
+  root_dir = function() return vim.loop.cwd() end;
+})
+
 lspconfig.templ.setup({
     on_attach = on_attach,
     capabilities = capabilities,
@@ -484,6 +490,8 @@ vim.api.nvim_set_keymap('n', '<C-n>', ':NvimTreeToggle<CR>', { noremap = true, s
 vim.api.nvim_set_keymap('n', '<C-t>', ':NvimTreeToggle<CR>', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('n', '<C-f>', ':NvimTreeFindFile<CR>', { noremap = true, silent = true })
 
+-- Zenmode keybindings
+vim.keymap.set('n', '<leader>z', '<cmd>ZenMode<CR>')
 
 -- LSP key mappings
 -- vim.api.nvim_set_keymap('n', 'gd', '<cmd>lua vim.lsp.buf.definition()<CR>zz', { noremap = true, silent = true })
@@ -514,4 +522,13 @@ vim.api.nvim_create_autocmd('TextYankPost', {
     callback = function()
         vim.highlight.on_yank()
     end,
+})
+
+
+-- Set the commentstring for SQL filetypes
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = "sql",
+  callback = function()
+    vim.bo.commentstring = "--%s"
+  end,
 })
