@@ -143,22 +143,25 @@ require("lazy").setup({
 
   -- zen mode B)
   "folke/zen-mode.nvim",
-  
+
   -- Telescope
   { 'nvim-telescope/telescope.nvim', tag = '0.1.8', dependencies = { 'nvim-lua/plenary.nvim' } },
   { 'nvim-telescope/telescope-fzf-native.nvim', run = 'make' },
   'nvim-telescope/telescope-symbols.nvim',
-  
+
   -- Treesitter
   { 'nvim-treesitter/nvim-treesitter', run = ':TSUpdate' },
   'nvim-treesitter/nvim-treesitter-context',
-  
+
   -- Lualine
   'nvim-lualine/lualine.nvim',
   'kyazdani42/nvim-web-devicons', -- optional, for file icons
 
   -- Color scheme
   'folke/tokyonight.nvim',
+  { "rose-pine/neovim", name = "rose-pine", config = function ()
+      vim.cmd('colorscheme rose-pine-moon')
+  end },
 
   -- Diffview
   "sindrets/diffview.nvim",
@@ -187,7 +190,6 @@ require("lazy").setup({
 })
 
 vim.g.go_def_mapping_enabled = 0
-require('tokyonight').load()
 vim.o.completeopt = "menuone,noselect"
 
 -- Mason
