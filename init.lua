@@ -18,10 +18,8 @@ vim.g.loaded_netrwPlugin = 1
 vim.g.omni_sql_no_default_maps = 1
 
 -- Clipboard copy
-local is_windows = vim.loop.os_uname().sysname == 'Windows_NT'
-local is_linux = vim.loop.os_uname().sysname == 'Linux'
-vim.api.nvim_set_keymap('v', '<leader>y', '"*y', { noremap = true, silent = true })
-vim.api.nvim_set_keymap('n', '<leader>Y', '"*Y', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('v', '<leader>y', '"+y', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', '<leader>Y', '"+Y', { noremap = true, silent = true })
 
 -- Plugin manager setup
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
@@ -148,6 +146,7 @@ require("lazy").setup({
   { 'nvim-telescope/telescope.nvim', tag = '0.1.8', dependencies = { 'nvim-lua/plenary.nvim' } },
   { 'nvim-telescope/telescope-fzf-native.nvim', run = 'make' },
   'nvim-telescope/telescope-symbols.nvim',
+  "benfowler/telescope-luasnip.nvim",
 
   -- Treesitter
   { 'nvim-treesitter/nvim-treesitter', run = ':TSUpdate' },
@@ -162,6 +161,25 @@ require("lazy").setup({
   { "rose-pine/neovim", name = "rose-pine", config = function ()
       vim.cmd('colorscheme rose-pine-moon')
   end },
+
+  -- vim-tmux-navigator
+  {
+      "christoomey/vim-tmux-navigator",
+      cmd = {
+          "TmuxNavigateLeft",
+          "TmuxNavigateDown",
+          "TmuxNavigateUp",
+          "TmuxNavigateRight",
+          "TmuxNavigatePrevious",
+      },
+      keys = {
+          { "<c-h>", "<cmd><C-U>TmuxNavigateLeft<cr>" },
+          { "<c-j>", "<cmd><C-U>TmuxNavigateDown<cr>" },
+          { "<c-k>", "<cmd><C-U>TmuxNavigateUp<cr>" },
+          { "<c-l>", "<cmd><C-U>TmuxNavigateRight<cr>" },
+          { "<c-\\>", "<cmd><C-U>TmuxNavigatePrevious<cr>" },
+      },
+  },
 
   -- Diffview
   "sindrets/diffview.nvim",
@@ -191,6 +209,7 @@ require("lazy").setup({
 
 vim.g.go_def_mapping_enabled = 0
 vim.o.completeopt = "menuone,noselect"
+vim.g.tmux_navigator_disable_when_zoomed = 1
 
 -- Mason
 require("mason").setup()
@@ -276,7 +295,33 @@ require("nvim-tree").setup {
 -- LSP settings
 local lspconfig = require('lspconfig')
 local cmp = require('cmp')
-local luasnip = require('luasnip')
+Luasnip = require('luasnip')
+local telescope = require("telescope")
+
+
+Luasnip.add_snippets("sql", {
+  Luasnip.snippet("sel", {
+    Luasnip.text_node("SELECT * FROM "),
+    Luasnip.insert_node(1, "table_name"),
+    Luasnip.text_node(";"),
+  }),
+
+  Luasnip.snippet("ins", {
+    Luasnip.text_node("INSERT INTO "),
+    Luasnip.insert_node(1, "table_name"),
+    Luasnip.text_node(" ("),
+    Luasnip.insert_node(2, "columns"),
+    Luasnip.text_node(") VALUES ("),
+    Luasnip.insert_node(3, "values"),
+    Luasnip.text_node(");"),
+  }),
+
+  Luasnip.snippet("get_view_def", {
+    Luasnip.text_node("SELECT pg_get_viewdef ('"),
+    Luasnip.insert_node(1, "schema.view"),
+    Luasnip.text_node("' , true);")
+  })
+})
 
 local capabilities = require('cmp_nvim_lsp').default_capabilities()
 local on_attach = function(client, bufnr)
@@ -345,7 +390,7 @@ vim.filetype.add({ extension = { templ = "templ" } })
 cmp.setup({
   snippet = {
     expand = function(args)
-      luasnip.lsp_expand(args.body)
+      Luasnip.lsp_expand(args.body)
     end,
   },
   mapping = {
@@ -357,8 +402,8 @@ cmp.setup({
     ['<Tab>'] = cmp.mapping(function(fallback)
       if cmp.visible() then
         cmp.select_next_item()
-      elseif luasnip.expand_or_jumpable() then
-        luasnip.expand_or_jump()
+      elseif Luasnip.expand_or_jumpable() then
+        Luasnip.expand_or_jump()
       else
         fallback()
       end
@@ -366,8 +411,8 @@ cmp.setup({
     ['<S-Tab>'] = cmp.mapping(function(fallback)
       if cmp.visible() then
         cmp.select_prev_item()
-      elseif luasnip.jumpable(-1) then
-        luasnip.jump(-1)
+      elseif Luasnip.jumpable(-1) then
+        Luasnip.jump(-1)
       else
         fallback()
       end
@@ -437,7 +482,7 @@ require('lualine').setup {
 }
 
 -- Telescope setup
-require('telescope').setup{
+telescope.setup{
   defaults = {
     file_ignore_patterns = { "node_modules", ".git/" },
   },
@@ -452,6 +497,9 @@ require('telescope').setup{
 }
 
 pcall(require('telescope').load_extension, 'fzf')
+pcall(require('telescope').load_extension, 'luasnip')
+
+vim.api.nvim_set_keymap('n', '<leader>sp', '<cmd>Telescope luasnip<CR>', { noremap = true, silent = true })
 
 -- REMAPS
 -- Add <leader>t as create new tab 
@@ -472,10 +520,31 @@ vim.keymap.set({"n", "v"}, "<leader>d", [["_d]])
 vim.keymap.set("n", "Q", "<nop>")
 vim.keymap.set("n", "<leader>fm", vim.lsp.buf.format)
 
-vim.keymap.set("n", "<C-j>", "<cmd>cnext<CR>zz")
-vim.keymap.set("n", "<C-k>", "<cmd>cprev<CR>zz")
-vim.keymap.set("n", "<leader>k", "<cmd>lnext<CR>zz")
-vim.keymap.set("n", "<leader>j", "<cmd>lprev<CR>zz")
+vim.keymap.set("n", "<leader>j", "<cmd>cnext<CR>zz")
+vim.keymap.set("n", "<leader>k", "<cmd>cprev<CR>zz")
+
+---- Map <Leader> + c to clear screen (redraw)
+vim.api.nvim_set_keymap('n', '<leader>c', '<cmd>nohlsearch<CR>', { noremap = true, silent = true })
+
+-- Function to toggle window zoom for each tab
+function ToggleZoom()
+  -- Check if the current tab is zoomed
+  if not vim.t.zoomed then
+    print("Zooming in!")
+    -- Maximize the current window (Ctrl-w | and Ctrl-w _)
+    vim.cmd('wincmd |')
+    vim.cmd('wincmd _')
+    vim.t.zoomed = true
+  else
+    print("Zooming out!")
+    -- Restore window layout (Ctrl-w =)
+    vim.cmd('wincmd =')
+    vim.t.zoomed = false
+  end
+end
+
+vim.api.nvim_set_keymap('n', '<c-w>z', ':lua ToggleZoom()<CR>', { noremap = true, silent = true })
+
 
 -- Telescope key mappings
 vim.api.nvim_set_keymap('n', '<leader>ff', '<cmd>Telescope find_files<CR>', { noremap = true, silent = true })
@@ -501,7 +570,7 @@ vim.keymap.set('n', '<leader>z', '<cmd>ZenMode<CR>')
 vim.keymap.set('n', 'gd', require('telescope.builtin').lsp_definitions)
 vim.keymap.set('n', 'gr', require('telescope.builtin').lsp_references)
 vim.keymap.set('n', 'K', vim.lsp.buf.hover)
-vim.api.nvim_set_keymap('n', '<leader>ci', '<cmd>lua vim.lsp.buf.hover()<CR>', { noremap = true, silent = true })
+-- vim.api.nvim_set_keymap('n', '<leader>ci', '<cmd>lua vim.lsp.buf.hover()<CR>', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('n', '<leader>vrn', '<cmd>lua vim.lsp.buf.rename()<CR>', { noremap = true, silent = true })
 -- vim.api.nvim_set_keymap('n', 'K', '<cmd>lua vim.lsp.buf.hover()<CR>', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('n', '[d', '<cmd>lua vim.diagnostic.goto_prev()<CR>', { noremap = true, silent = true })
@@ -517,12 +586,13 @@ vim.api.nvim_set_keymap('n', ']c', ']czz', { noremap = true, silent = true })
 -- Remap [c to jump to the previous change and center the screen
 vim.api.nvim_set_keymap('n', '[c', '[czz', { noremap = true, silent = true })
 
--- Autocommands
+-- Create an autocmd for highlighting yanked text
+vim.api.nvim_set_hl(0, 'YankHighlight', { bg = '#FFA500', fg = '#FFFFFF' })
 vim.api.nvim_create_autocmd('TextYankPost', {
-    desc='Highlight yanked text',
-    group=vim.api.nvim_create_augroup('kickstart-highlight-group', { clear = true }),
+    desc = 'Highlight yanked text',
+    group = vim.api.nvim_create_augroup('YankHighlightGroup', { clear = true }),
     callback = function()
-        vim.highlight.on_yank()
+        vim.highlight.on_yank({ higroup = 'YankHighlight', timeout = 200 })
     end,
 })
 
