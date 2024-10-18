@@ -16,6 +16,7 @@ vim.opt.lazyredraw = true
 vim.g.loaded_netrw = 1
 vim.g.loaded_netrwPlugin = 1
 vim.g.omni_sql_no_default_maps = 1
+vim.opt.guicursor = "n-v-c:block,i:hor10"
 
 -- Clipboard copy
 vim.api.nvim_set_keymap('v', '<leader>y', '"+y', { noremap = true, silent = true })
@@ -181,6 +182,9 @@ require("lazy").setup({
       },
   },
 
+  -- Linter
+  'mfussenegger/nvim-lint',
+
   -- Diffview
   "sindrets/diffview.nvim",
 
@@ -338,6 +342,12 @@ lspconfig.pyright.setup{
 
 lspconfig.ts_ls.setup{}
 
+lspconfig.eslint.setup{
+    on_attach = on_attach,
+    capabilities = capabilities,
+    filetypes = { "javascript" }
+}
+
 lspconfig.cssls.setup{
     on_attach = on_attach,
     capabilities = capabilities,
@@ -440,6 +450,18 @@ cmp.event:on(
   'confirm_done',
   cmp_autopairs.on_confirm_done()
 )
+
+require('lint').linters_by_ft = {
+  markdown = {'vale'},
+  javascript = { 'eslint' },
+}
+
+vim.api.nvim_create_autocmd({ "BufWritePost", "InsertLeave", "BufEnter" }, {
+    callback = function()
+        require("lint").try_lint()
+    end,
+})
+
 
 -- Treesitter setup
 require('nvim-treesitter.configs').setup {
@@ -587,7 +609,7 @@ vim.api.nvim_set_keymap('n', ']c', ']czz', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('n', '[c', '[czz', { noremap = true, silent = true })
 
 -- Create an autocmd for highlighting yanked text
-vim.api.nvim_set_hl(0, 'YankHighlight', { bg = '#FFA500', fg = '#FFFFFF' })
+vim.api.nvim_set_hl(0, 'YankHighlight', { bg = '#FFA500', fg = '#000000' })
 vim.api.nvim_create_autocmd('TextYankPost', {
     desc = 'Highlight yanked text',
     group = vim.api.nvim_create_augroup('YankHighlightGroup', { clear = true }),
