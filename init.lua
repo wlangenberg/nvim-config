@@ -160,7 +160,7 @@ require("lazy").setup({
   -- Color scheme
   'folke/tokyonight.nvim',
   { "rose-pine/neovim", name = "rose-pine", config = function ()
-      vim.cmd('colorscheme rose-pine-moon')
+      vim.cmd('colorscheme rose-pine-main')
   end },
 
   -- vim-tmux-navigator
@@ -264,18 +264,20 @@ require("nvim-tree").setup {
     },
     view = {
         centralize_selection = true,
-        float = {
-            enable = true,             -- Enable floating window
-            quit_on_focus_loss = true,
-            open_win_config = {
-                relative = "editor",     -- Relative to the entire editor
-                border = "rounded",      -- Rounded border style for aesthetics
-                width = vim.fn.round(vim.o.columns * 0.7),  -- 70% of the screen width
-                height = vim.fn.round(vim.o.lines * 0.8),   -- 80% of the screen height
-                row = vim.fn.round((vim.o.lines - vim.fn.round(vim.o.lines * 0.8)) / 2),  -- Center the row
-                col = vim.fn.round((vim.o.columns - vim.fn.round(vim.o.columns * 0.7)) / 2), -- Center the column
-            },
-        },
+        number = true,
+        relativenumber = true,
+        -- float = {
+        --     enable = true,             -- Enable floating window
+        --     quit_on_focus_loss = true,
+        --     open_win_config = {
+        --         relative = "editor",     -- Relative to the entire editor
+        --         border = "rounded",      -- Rounded border style for aesthetics
+        --         width = vim.fn.round(vim.o.columns * 0.7),  -- 70% of the screen width
+        --         height = vim.fn.round(vim.o.lines * 0.8),   -- 80% of the screen height
+        --         row = vim.fn.round((vim.o.lines - vim.fn.round(vim.o.lines * 0.8)) / 2),  -- Center the row
+        --         col = vim.fn.round((vim.o.columns - vim.fn.round(vim.o.columns * 0.7)) / 2), -- Center the column
+        --     },
+        -- },
         width = 30,
     },
     actions = {
