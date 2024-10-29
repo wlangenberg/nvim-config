@@ -454,7 +454,6 @@ cmp.event:on(
 )
 
 require('lint').linters_by_ft = {
-  markdown = {'vale'},
   javascript = { 'eslint' },
 }
 
