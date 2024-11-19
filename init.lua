@@ -204,6 +204,17 @@ require("lazy").setup({
     }
   },
 
+
+  {
+    'MeanderingProgrammer/render-markdown.nvim',
+    dependencies = { 'nvim-treesitter/nvim-treesitter', 'echasnovski/mini.nvim' }, -- if you use the mini.nvim suite
+    -- dependencies = { 'nvim-treesitter/nvim-treesitter', 'echasnovski/mini.icons' }, -- if you use standalone mini plugins
+    -- dependencies = { 'nvim-treesitter/nvim-treesitter', 'nvim-tree/nvim-web-devicons' }, -- if you prefer nvim-web-devicons
+    ---@module 'render-markdown'
+    ---@type render.md.UserConfig
+    opts = {},
+  },
+
   -- Autopairs (also lazy-load)
   {
     'windwp/nvim-autopairs',
@@ -507,7 +518,10 @@ require('lualine').setup {
 -- Telescope setup
 telescope.setup{
   defaults = {
-    file_ignore_patterns = { "node_modules", ".git/" },
+    file_ignore_patterns = { "node_modules", ".git/", "%.min%.js$" },
+    preview = {
+        timeout = 200,
+    },
   },
   extensions = {
     fzf = {
