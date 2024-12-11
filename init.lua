@@ -17,6 +17,7 @@ vim.g.loaded_netrw = 1
 vim.g.loaded_netrwPlugin = 1
 vim.g.omni_sql_no_default_maps = 1
 vim.opt.guicursor = "n-v-c:block,i:hor10"
+vim.opt.shortmess:append("I")
 
 -- Clipboard copy
 vim.api.nvim_set_keymap('v', '<leader>y', '"+y', { noremap = true, silent = true })
@@ -641,3 +642,20 @@ vim.api.nvim_create_autocmd("FileType", {
     vim.bo.commentstring = "--%s"
   end,
 })
+
+-- Function to toggle statusline visibility
+local statusline_visible = true
+
+function ToggleStatusline()
+  if statusline_visible then
+    vim.opt.laststatus = 0 -- Hide the statusline
+    statusline_visible = false
+  else
+    vim.opt.laststatus = 2 -- Show the statusline (always visible)
+    statusline_visible = true
+  end
+end
+
+-- Map a key to toggle statusline
+vim.keymap.set('n', '<leader>st', ToggleStatusline, { noremap = true, silent = true, desc = "Toggle Statusline" })
+
