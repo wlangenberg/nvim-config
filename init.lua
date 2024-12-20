@@ -208,6 +208,11 @@ require("lazy").setup({
     }
   },
 
+  {
+    "Hoffs/omnisharp-extended-lsp.nvim",
+    dependencies = { "neovim/nvim-lspconfig" },
+  },
+
 
   {
     'MeanderingProgrammer/render-markdown.nvim',
@@ -351,6 +356,46 @@ end
 
 -- LSP servers setup
 lspconfig.gopls.setup{}
+
+
+lspconfig.omnisharp.setup{
+    cmd = { "omnisharp", "--languageserver" },
+    settings = {
+        FormattingOptions = {
+            EnableEditorConfigSupport = true,
+            OrganizeImports = nil,
+        },
+        MsBuild = {
+            LoadProjectsOnDemand = nil,
+        },
+        RoslynExtensionsOptions = {
+            EnableAnalyzersSupport = nil,
+            EnableImportCompletion = nil,
+            AnalyzeOpenDocumentsOnly = nil,
+        },
+        Sdk = {
+            IncludePrereleases = true,
+        },
+    },
+    on_attach = function(client, bufnr)
+        -- Helper function for buffer-local keymaps
+        local buf_set_keymap = function(mode, key, action, desc)
+            vim.api.nvim_buf_set_keymap(bufnr, mode, key, action, { noremap = true, silent = true, desc = desc })
+        end
+
+    -- Set omnisharp-extended keymaps
+    buf_set_keymap('n', 'gd', "<cmd>lua require('omnisharp_extended').lsp_definition()<CR>", "Go to Definition (OmniSharp)")
+    buf_set_keymap('n', 'gi', "<cmd>lua require('omnisharp_extended').lsp_implementation()<CR>", "Go to Implementation (OmniSharp)")
+    buf_set_keymap('n', '<leader>K', "<cmd>lua require('omnisharp_extended').lsp_type_definition()<CR>", "Type Definition (OmniSharp)")
+    buf_set_keymap('n', 'gr', "<cmd>lua require('omnisharp_extended').telescope_lsp_references()<CR>", "Find References (OmniSharp)")
+    -- buf_set_keymap('n', 'gr', "nnoremap gr <cmd>lua require('omnisharp_extended').telescope_lsp_references()<cr>", "Find References (OmniSharp)")
+    -- lua require('omnisharp_extended').telescope_lsp_references()
+
+    -- Optional: Notify that OmniSharp is active
+    print("OmniSharp LSP attached for buffer " .. bufnr)
+    end,
+    capabilities = capabilities
+}
 
 lspconfig.pyright.setup{
     on_attach = on_attach,
