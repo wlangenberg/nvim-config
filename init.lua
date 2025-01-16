@@ -238,7 +238,7 @@ vim.g.tmux_navigator_disable_when_zoomed = 1
 -- Mason
 require("mason").setup()
 require("mason-lspconfig").setup({
-    ensure_installed = { "tailwindcss", "html", "htmx", "templ", "gopls", "pyright", "ts_ls","lua_ls", "emmet_language_server", "cssls" },
+    ensure_installed = { "tailwindcss", "html", "htmx", "templ", "gopls", "pyright", "lua_ls", "emmet_language_server", "cssls" },
     automatic_installation = true,
 })
 
@@ -402,8 +402,6 @@ lspconfig.pyright.setup{
     capabilities = capabilities
 }
 
-lspconfig.ts_ls.setup{}
-
 lspconfig.eslint.setup{
     on_attach = on_attach,
     capabilities = capabilities,
@@ -512,9 +510,9 @@ cmp.event:on(
   cmp_autopairs.on_confirm_done()
 )
 
-require('lint').linters_by_ft = {
-  javascript = { 'eslint' },
-}
+-- require('lint').linters_by_ft = {
+--   javascript = { 'eslint' },
+-- }
 
 vim.api.nvim_create_autocmd({ "BufWritePost", "InsertLeave", "BufEnter" }, {
     callback = function()
