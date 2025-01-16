@@ -18,6 +18,7 @@ vim.g.loaded_netrwPlugin = 1
 vim.g.omni_sql_no_default_maps = 1
 vim.opt.guicursor = "n-v-c:block,i:hor10"
 vim.opt.shortmess:append("I")
+vim.o.scrolloff = 5
 
 -- Clipboard copy
 vim.api.nvim_set_keymap('v', '<leader>y', '"+y', { noremap = true, silent = true })
@@ -651,6 +652,7 @@ vim.keymap.set('n', '<leader>z', '<cmd>ZenMode<CR>')
 -- vim.api.nvim_set_keymap('n', 'gd', '<cmd>lua vim.lsp.buf.definition()<CR>zz', { noremap = true, silent = true })
 -- vim.api.nvim_set_keymap('n', 'gr', '<cmd>lua vim.lsp.buf.references()<CR>', { noremap = true, silent = true })
 vim.keymap.set('n', 'gd', require('telescope.builtin').lsp_definitions)
+vim.keymap.set('n', 'gi', require('telescope.builtin').lsp_implementations)
 vim.keymap.set('n', 'gr', require('telescope.builtin').lsp_references)
 vim.keymap.set('n', 'K', vim.lsp.buf.hover)
 -- vim.api.nvim_set_keymap('n', '<leader>ci', '<cmd>lua vim.lsp.buf.hover()<CR>', { noremap = true, silent = true })
