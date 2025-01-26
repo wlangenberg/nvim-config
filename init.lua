@@ -239,7 +239,7 @@ vim.g.tmux_navigator_disable_when_zoomed = 1
 -- Mason
 require("mason").setup()
 require("mason-lspconfig").setup({
-    ensure_installed = { "tailwindcss", "html", "htmx", "templ", "gopls", "pyright", "lua_ls", "emmet_language_server", "cssls" },
+    ensure_installed = { "tailwindcss", "html", "htmx", "templ", "gopls", "pyright", "lua_ls", "emmet_language_server", "cssls", "clangd" },
     automatic_installation = true,
 })
 
@@ -398,7 +398,17 @@ lspconfig.omnisharp.setup{
     capabilities = capabilities
 }
 
+lspconfig.clangd.setup{
+    on_attach = on_attach,
+    capabilities = capabilities
+}
+
 lspconfig.pyright.setup{
+    on_attach = on_attach,
+    capabilities = capabilities
+}
+
+lspconfig.volar.setup{
     on_attach = on_attach,
     capabilities = capabilities
 }
@@ -406,7 +416,7 @@ lspconfig.pyright.setup{
 lspconfig.eslint.setup{
     on_attach = on_attach,
     capabilities = capabilities,
-    filetypes = { "javascript" }
+    filetypes = { "javascript", "typescript", "vue" }
 }
 
 lspconfig.cssls.setup{
@@ -510,17 +520,6 @@ cmp.event:on(
   'confirm_done',
   cmp_autopairs.on_confirm_done()
 )
-
--- require('lint').linters_by_ft = {
---   javascript = { 'eslint' },
--- }
-
-vim.api.nvim_create_autocmd({ "BufWritePost", "InsertLeave", "BufEnter" }, {
-    callback = function()
-        require("lint").try_lint()
-    end,
-})
-
 
 -- Treesitter setup
 require('nvim-treesitter.configs').setup {
