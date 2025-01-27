@@ -239,7 +239,7 @@ vim.g.tmux_navigator_disable_when_zoomed = 1
 -- Mason
 require("mason").setup()
 require("mason-lspconfig").setup({
-    ensure_installed = { "tailwindcss", "html", "htmx", "templ", "gopls", "pyright", "lua_ls", "emmet_language_server", "cssls", "clangd" },
+    ensure_installed = { "tailwindcss", "html", "htmx", "templ", "gopls", "pyright", "lua_ls", "ts_ls", "emmet_language_server", "cssls", "clangd", "eslint" },
     automatic_installation = true,
 })
 
@@ -416,7 +416,11 @@ lspconfig.volar.setup{
 lspconfig.eslint.setup{
     on_attach = on_attach,
     capabilities = capabilities,
-    filetypes = { "javascript", "typescript", "vue" }
+    filetypes = { "javascript", "typescript", "vue" },
+     settings = {
+        format = { enable = false },
+        logLevel = "debug",
+    }
 }
 
 lspconfig.cssls.setup{
@@ -453,6 +457,13 @@ lspconfig.htmx.setup({
     filetypes = { "html", "templ" },
 })
 
+lspconfig.ts_ls.setup({
+    on_attach = on_attach,
+    capabilities = capabilities,
+    filetypes = { "typescript", "javascript", "javascript" },
+})
+
+
 lspconfig.emmet_language_server.setup({
   filetypes = { "eruby", "html", "javascript", "javascriptreact", "less", "sass", "scss", "pug", "typescriptreact", "htmx" },
   init_options = {},
@@ -461,7 +472,7 @@ lspconfig.emmet_language_server.setup({
 lspconfig.tailwindcss.setup({
     on_attach = on_attach,
     capabilities = capabilities,
-    filetypes = { "templ", "astro", "javascript", "typescript", "react" },
+    filetypes = { "templ", "astro", "javascript", "typescript", "react", "vue" },
     init_options = { userLanguages = { templ = "html" } },
 })
 
