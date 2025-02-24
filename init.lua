@@ -328,19 +328,11 @@ require("nvim-tree").setup {
         centralize_selection = true,
         number = true,
         relativenumber = true,
-        -- float = {
-        --     enable = true,             -- Enable floating window
-        --     quit_on_focus_loss = true,
-        --     open_win_config = {
-        --         relative = "editor",     -- Relative to the entire editor
-        --         border = "rounded",      -- Rounded border style for aesthetics
-        --         width = vim.fn.round(vim.o.columns * 0.7),  -- 70% of the screen width
-        --         height = vim.fn.round(vim.o.lines * 0.8),   -- 80% of the screen height
-        --         row = vim.fn.round((vim.o.lines - vim.fn.round(vim.o.lines * 0.8)) / 2),  -- Center the row
-        --         col = vim.fn.round((vim.o.columns - vim.fn.round(vim.o.columns * 0.7)) / 2), -- Center the column
-        --     },
-        -- },
-        width = 30,
+        width = {
+            min = 30,
+            max = -1,
+            padding = 1
+        },
     },
     actions = {
         change_dir = {
@@ -390,22 +382,22 @@ Luasnip.add_snippets("sql", {
     Luasnip.text_node("' , true);")
   }),
 
-  Luasnip.snippet("newdataset", {
-    Luasnip.text_node("INSERT INTO mbdatacollections.sysdatasets"),
-    Luasnip.text_node("(datasetname, datasetdescription, datasetview, datacategoryid)"),
-    Luasnip.text_node("VALUES ('"),
+Luasnip.snippet("newdataset", {
+    Luasnip.text_node({
+        "INSERT INTO mbdatacollections.sysdatasets",
+        "(datasetname, datasetdescription, datasetview, datacategoryid)",
+        "VALUES",
+        "('"
+    }),
     Luasnip.insert_node(1, "datasetname"),
     Luasnip.text_node("', '"),
     Luasnip.insert_node(2, "datasetdescription"),
     Luasnip.text_node("', '"),
     Luasnip.insert_node(3, "datasetview"),
-    Luasnip.text_node("', '"),
-    Luasnip.insert_node(4, "datacategoryid"),
-    Luasnip.text_node("');"),
-    }),
-
-  })
-
+    Luasnip.text_node("', "),
+    Luasnip.insert_node(4, "1"),
+    Luasnip.text_node(");")
+})
 })
 
 local capabilities = require('cmp_nvim_lsp').default_capabilities()
@@ -774,3 +766,14 @@ end
 -- Map a key to toggle statusline
 vim.keymap.set('n', '<leader>st', ToggleStatusline, { noremap = true, silent = true, desc = "Toggle Statusline" })
 
+
+local function buffer_name_generator(opts)
+    vim.notify(vim.inspect(opts), vim.log.levels.INFO)
+
+    if not opts.table or opts.table == '' then
+        return 'query-' .. os.time() .. '.sql'
+    end
+    return 'query-table-' .. opts.table .. '-' .. os.time() .. '.sql'
+end
+
+vim.g.Db_ui_buffer_name_generator = buffer_name_generator
