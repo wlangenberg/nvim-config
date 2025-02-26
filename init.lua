@@ -1,7 +1,5 @@
--- Define leader key
-vim.g.mapleader = " "
-
 -- Basic settings
+vim.g.mapleader = " "
 vim.opt.relativenumber = true
 vim.opt.number = true
 vim.opt.termguicolors = true
@@ -98,7 +96,14 @@ require("lazy").setup({
             vim.api.nvim_set_keymap('n', '<leader>dl', ':lua require\'dap\'.run_last()<CR>', { noremap = true, silent = true })
         end,
     },
-
+    {
+        "leoluz/nvim-dap-go",
+        ft = "go",
+        dependencies = "mfussenegger/nvim-dap",
+        config = function()
+            require('dap-go').setup()
+        end,
+    },
   {
       "nvim-tree/nvim-tree.lua",
       version = "*",
@@ -186,8 +191,46 @@ require("lazy").setup({
   -- zen mode B)
   "folke/zen-mode.nvim",
 
-  -- COPILOT
+  -- -- COPILOT
   "github/copilot.vim",
+  "stevearc/dressing.nvim",
+  "nvim-lua/plenary.nvim",
+  "MunifTanjim/nui.nvim",
+  -- {
+  -- "yetone/avante.nvim",
+  -- event = "VeryLazy",
+  -- lazy = false,
+  -- version = false,
+  -- opts = {
+  --   provider = "claude",
+  --   claude = {
+  --     endpoint = "https://api.anthropic.com",
+  --     model = "claude-3-5-sonnet-20241022"
+  --   }
+  -- },
+  -- build = "make",
+  -- dependencies = {
+  --   "nvim-treesitter/nvim-treesitter",
+  --   "stevearc/dressing.nvim",
+  --   "nvim-lua/plenary.nvim",
+  --   "MunifTanjim/nui.nvim",
+  --   {
+  --     "HakonHarnes/img-clip.nvim",
+  --     event = "VeryLazy",
+  --     opts = {
+  --       default = {
+  --         embed_image_as_base64 = false,
+  --         prompt_for_file_name = false,
+  --         drag_and_drop = {
+  --           insert_mode = true,
+  --         },
+  --         use_absolute_path = true,
+  --       },
+  --     },
+  --   },
+  -- },
+-- },
+
 
   -- Telescope
   { 'nvim-telescope/telescope.nvim', tag = '0.1.8', dependencies = { 'nvim-lua/plenary.nvim' } },
@@ -510,7 +553,7 @@ lspconfig.htmx.setup({
 lspconfig.ts_ls.setup({
     on_attach = on_attach,
     capabilities = capabilities,
-    filetypes = { "typescript", "javascript", "javascript" },
+    filetypes = { "typescript", "javascript", "javascript", "svelte" },
 })
 
 
@@ -522,8 +565,14 @@ lspconfig.emmet_language_server.setup({
 lspconfig.tailwindcss.setup({
     on_attach = on_attach,
     capabilities = capabilities,
-    filetypes = { "templ", "astro", "javascript", "typescript", "react", "vue" },
+    filetypes = { "templ", "astro", "javascript", "typescript", "react", "vue", "svelte" },
     init_options = { userLanguages = { templ = "html" } },
+})
+
+lspconfig.svelte.setup({
+    on_attach = on_attach,
+    capabilities = capabilities,
+    filetypes = { "svelte" }
 })
 
 vim.filetype.add({ extension = { templ = "templ" } })
@@ -667,6 +716,8 @@ vim.keymap.set("n", "<leader>fm", vim.lsp.buf.format)
 vim.keymap.set("n", "<leader>j", "<cmd>cnext<CR>zz")
 vim.keymap.set("n", "<leader>k", "<cmd>cprev<CR>zz")
 
+vim.keymap.set("n", "<leader>gs", ":G<CR>")
+
 ---- Map <Leader> + c to clear screen (redraw)
 vim.api.nvim_set_keymap('n', '<leader>c', '<cmd>nohlsearch<CR>', { noremap = true, silent = true })
 
@@ -715,7 +766,7 @@ vim.keymap.set('n', 'gd', require('telescope.builtin').lsp_definitions)
 vim.keymap.set('n', 'gi', require('telescope.builtin').lsp_implementations)
 vim.keymap.set('n', 'gr', require('telescope.builtin').lsp_references)
 vim.keymap.set('n', 'K', vim.lsp.buf.hover)
--- vim.api.nvim_set_keymap('n', '<leader>ci', '<cmd>lua vim.lsp.buf.hover()<CR>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', '<leader>ci', '<cmd>lua vim.lsp.buf.hover()<CR>', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('n', '<leader>vrn', '<cmd>lua vim.lsp.buf.rename()<CR>', { noremap = true, silent = true })
 -- vim.api.nvim_set_keymap('n', 'K', '<cmd>lua vim.lsp.buf.hover()<CR>', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('n', '[d', '<cmd>lua vim.diagnostic.goto_prev()<CR>', { noremap = true, silent = true })
