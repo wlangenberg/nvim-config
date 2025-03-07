@@ -11,6 +11,7 @@ vim.opt.shiftwidth = 4
 vim.opt.expandtab = true
 vim.opt.fixendofline = false
 vim.opt.lazyredraw = true
+vim.opt.colorcolumn = "80"
 vim.g.loaded_netrw = 1
 vim.g.loaded_netrwPlugin = 1
 vim.g.omni_sql_no_default_maps = 1
@@ -104,14 +105,23 @@ require("lazy").setup({
             require('dap-go').setup()
         end,
     },
-  {
-      "nvim-tree/nvim-tree.lua",
-      version = "*",
-      lazy = false,
-      dependencies = {
-          "nvim-tree/nvim-web-devicons",
-      },
-  },
+    {
+        "nicholasmata/nvim-dap-cs",
+        dependencies = { 'mfussenegger/nvim-dap' },
+        config = function()
+            require("dap-cs").setup({
+                netcoredbg_path = "/opt/netcoredbg/netcoredbg", -- Ensure this points to your NetCoreDbg binary
+            })
+        end,
+    },
+    {
+        "nvim-tree/nvim-tree.lua",
+        version = "*",
+        lazy = false,
+        dependencies = {
+            "nvim-tree/nvim-web-devicons",
+        },
+    },
 
   {
       "dense-analysis/ale",
@@ -174,7 +184,7 @@ require("lazy").setup({
 
   -- Add vim-obsession
   "tpope/vim-obsession",
-
+  "tpope/vim-repeat",
   {
     "tpope/vim-surround",
     event = "VeryLazy"
@@ -299,15 +309,15 @@ require("lazy").setup({
   },
 
 
-  {
-    'MeanderingProgrammer/render-markdown.nvim',
-    dependencies = { 'nvim-treesitter/nvim-treesitter', 'echasnovski/mini.nvim' }, -- if you use the mini.nvim suite
-    -- dependencies = { 'nvim-treesitter/nvim-treesitter', 'echasnovski/mini.icons' }, -- if you use standalone mini plugins
-    -- dependencies = { 'nvim-treesitter/nvim-treesitter', 'nvim-tree/nvim-web-devicons' }, -- if you prefer nvim-web-devicons
-    ---@module 'render-markdown'
-    ---@type render.md.UserConfig
-    opts = {},
-  },
+  --{
+  --  'MeanderingProgrammer/render-markdown.nvim',
+  --  dependencies = { 'nvim-treesitter/nvim-treesitter', 'echasnovski/mini.nvim' }, -- if you use the mini.nvim suite
+  --  -- dependencies = { 'nvim-treesitter/nvim-treesitter', 'echasnovski/mini.icons' }, -- if you use standalone mini plugins
+  --  -- dependencies = { 'nvim-treesitter/nvim-treesitter', 'nvim-tree/nvim-web-devicons' }, -- if you prefer nvim-web-devicons
+  --  ---@module 'render-markdown'
+  --  ---@type render.md.UserConfig
+  --  opts = {},
+  --},
 
   -- Autopairs (also lazy-load)
   {
@@ -454,18 +464,21 @@ lspconfig.gopls.setup{}
 
 lspconfig.omnisharp.setup{
     cmd = { "omnisharp", "--languageserver" },
+    enable_import_completion = true,
     settings = {
         FormattingOptions = {
             EnableEditorConfigSupport = true,
-            OrganizeImports = nil,
+            EnableFormatting = true,
+            OrganizeImports = false,
         },
         MsBuild = {
-            LoadProjectsOnDemand = nil,
+            LoadProjectsOnDemand = false,
         },
         RoslynExtensionsOptions = {
-            EnableAnalyzersSupport = nil,
-            EnableImportCompletion = nil,
-            AnalyzeOpenDocumentsOnly = nil,
+            EnableDecompilationSupport = true,
+            EnableAnalyzersSupport = true,
+            EnableImportCompletion = true,
+            AnalyzeOpenDocumentsOnly = false,
         },
         Sdk = {
             IncludePrereleases = true,
@@ -484,8 +497,6 @@ lspconfig.omnisharp.setup{
     buf_set_keymap('n', 'gr', "<cmd>lua require('omnisharp_extended').telescope_lsp_references()<CR>", "Find References (OmniSharp)")
     -- buf_set_keymap('n', 'gr', "nnoremap gr <cmd>lua require('omnisharp_extended').telescope_lsp_references()<cr>", "Find References (OmniSharp)")
     -- lua require('omnisharp_extended').telescope_lsp_references()
-
-    -- Optional: Notify that OmniSharp is active
     print("OmniSharp LSP attached for buffer " .. bufnr)
     end,
     capabilities = capabilities
@@ -766,6 +777,8 @@ vim.keymap.set('n', 'gd', require('telescope.builtin').lsp_definitions)
 vim.keymap.set('n', 'gi', require('telescope.builtin').lsp_implementations)
 vim.keymap.set('n', 'gr', require('telescope.builtin').lsp_references)
 vim.keymap.set('n', 'K', vim.lsp.buf.hover)
+vim.keymap.set('n', '<leader>i', vim.lsp.buf.code_action)
+
 vim.api.nvim_set_keymap('n', '<leader>ci', '<cmd>lua vim.lsp.buf.hover()<CR>', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('n', '<leader>vrn', '<cmd>lua vim.lsp.buf.rename()<CR>', { noremap = true, silent = true })
 -- vim.api.nvim_set_keymap('n', 'K', '<cmd>lua vim.lsp.buf.hover()<CR>', { noremap = true, silent = true })
@@ -773,7 +786,8 @@ vim.api.nvim_set_keymap('n', '[d', '<cmd>lua vim.diagnostic.goto_prev()<CR>', { 
 vim.api.nvim_set_keymap('n', ']d', '<cmd>lua vim.diagnostic.goto_next()<CR>', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('n', '<leader>vd', '<cmd>lua vim.diagnostic.enable(not vim.diagnostic.is_enabled())<CR>', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('n', '<leader>e', '<cmd>lua vim.diagnostic.open_float()<CR>', { noremap = true, silent = true })
-vim.api.nvim_set_keymap('n', '<leader>x', '<cmd>lua vim.diagnostic.setloclist()<CR>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', '<leader>vf', '<cmd>lua vim.diagnostic.setloclist()<CR>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', '<leader>vq', '<cmd>lua vim.diagnostic.setqflist()<CR>', { noremap = true, silent = true })
 
 -- Fugitive
 -- -- Remap ]c to jump to the next change and center the screen
