@@ -2,6 +2,7 @@
 vim.g.mapleader = " "
 vim.opt.relativenumber = true
 vim.opt.number = true
+vim.opt.wrap = false
 vim.opt.termguicolors = true
 vim.opt.errorbells = false
 vim.opt.title = true
