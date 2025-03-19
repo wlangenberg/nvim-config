@@ -577,7 +577,7 @@ lspconfig.emmet_language_server.setup({
 lspconfig.tailwindcss.setup({
     on_attach = on_attach,
     capabilities = capabilities,
-    filetypes = { "templ", "astro", "javascript", "typescript", "react", "vue", "svelte" },
+    filetypes = { "html", "astro", "javascript", "typescript", "react", "vue", "svelte", "templ" },
     init_options = { userLanguages = { templ = "html" } },
 })
 
@@ -777,6 +777,7 @@ vim.keymap.set('n', '<leader>z', '<cmd>ZenMode<CR>')
 vim.keymap.set('n', 'gd', require('telescope.builtin').lsp_definitions)
 vim.keymap.set('n', 'gi', require('telescope.builtin').lsp_implementations)
 vim.keymap.set('n', 'gr', require('telescope.builtin').lsp_references)
+vim.keymap.set('n', '<leader>K', require('telescope.builtin').lsp_type_definitions)
 vim.keymap.set('n', 'K', vim.lsp.buf.hover)
 vim.keymap.set('n', '<leader>i', vim.lsp.buf.code_action)
 
