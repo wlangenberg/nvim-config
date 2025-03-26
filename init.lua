@@ -12,7 +12,7 @@ vim.opt.shiftwidth = 4
 vim.opt.expandtab = true
 vim.opt.fixendofline = false
 vim.opt.lazyredraw = true
-vim.opt.colorcolumn = "80"
+-- vim.opt.colorcolumn = "80"
 vim.g.loaded_netrw = 1
 vim.g.loaded_netrwPlugin = 1
 vim.g.omni_sql_no_default_maps = 1
@@ -253,15 +253,35 @@ require("lazy").setup({
   { 'nvim-treesitter/nvim-treesitter', run = ':TSUpdate' },
   'nvim-treesitter/nvim-treesitter-context',
 
+  -- Undotree
+  {
+      "jiaoshijie/undotree",
+      dependencies = "nvim-lua/plenary.nvim",
+      config = true,
+      keys = {
+          { "<leader>u", "<cmd>lua require('undotree').toggle()<cr>" },
+      },
+  },
+
+  -- Harpoon
+  {
+    "ThePrimeagen/harpoon",
+    branch = "harpoon2",
+    dependencies = { "nvim-lua/plenary.nvim" }
+  },
+
   -- Lualine
   'nvim-lualine/lualine.nvim',
   'kyazdani42/nvim-web-devicons', -- optional, for file icons
 
   -- Color scheme
   'folke/tokyonight.nvim',
-  { "rose-pine/neovim", name = "rose-pine", config = function ()
-      vim.cmd('colorscheme rose-pine-main')
-  end },
+
+  { "rose-pine/neovim", name = "rose-pine" },
+
+  -- { "rose-pine/neovim", name = "rose-pine", config = function ()
+  --     vim.cmd('colorscheme rose-pine-main')
+  -- end },
 
   -- vim-tmux-navigator
   {
@@ -331,6 +351,20 @@ vim.g.go_def_mapping_enabled = 0
 vim.o.completeopt = "menuone,noselect"
 vim.g.tmux_navigator_disable_when_zoomed = 1
 
+require('undotree').setup()
+
+
+require("rose-pine").setup({
+    variant = "auto",
+    palette =  {
+        main = {
+            base = "#161719",
+        }
+    }
+})
+
+vim.cmd("colorscheme rose-pine")
+
 -- Mason
 require("mason").setup()
 require("mason-lspconfig").setup({
@@ -355,6 +389,23 @@ require("zen-mode").setup({
         tmux = { enabled = true },
     },
 })
+
+-- Harpoon setup
+local harpoon = require("harpoon")
+harpoon:setup()
+
+vim.keymap.set("n", "<leader>aa", function() harpoon:list():add() print("Added to harpoon") end)
+vim.keymap.set("n", "<leader>al", function() harpoon.ui:toggle_quick_menu(harpoon:list()) end)
+
+vim.keymap.set("n", "<leader>aj", function() harpoon:list():select(1) print("Go to harpoon 1") end)
+vim.keymap.set("n", "<leader>ak", function() harpoon:list():select(2) print("Go to harpoon 2") end)
+vim.keymap.set("n", "<leader>au", function() harpoon:list():select(3) print("Go to harpoon 3") end)
+vim.keymap.set("n", "<leader>ai", function() harpoon:list():select(4) print("Go to harpoon 4") end)
+vim.keymap.set("n", "<leader>ao", function() harpoon:list():select(5) print("Go to harpoon 5") end)
+
+-- Toggle previous & next buffers stored within Harpoon list
+vim.keymap.set("n", "<leader>ap", function() harpoon:list():prev() end)
+vim.keymap.set("n", "<leader>an", function() harpoon:list():next() end)
 
 -- Autopairs setup
 require('nvim-autopairs').setup{}
@@ -458,13 +509,14 @@ local capabilities = require('cmp_nvim_lsp').default_capabilities()
 local on_attach = function(client, bufnr)
     -- Custom on_attach logic here
 end
+local lsp_util = require('lspconfig.util')
 
 -- LSP servers setup
 lspconfig.gopls.setup{}
 
 
 lspconfig.omnisharp.setup{
-    cmd = { "omnisharp", "--languageserver" },
+    cmd = { "/usr/local/bin/omnisharp", "--languageserver" },
     enable_import_completion = true,
     settings = {
         FormattingOptions = {
@@ -577,7 +629,7 @@ lspconfig.emmet_language_server.setup({
 lspconfig.tailwindcss.setup({
     on_attach = on_attach,
     capabilities = capabilities,
-    filetypes = { "html", "astro", "javascript", "typescript", "react", "vue", "svelte", "templ" },
+    filetypes = { "html", "astro", "javascript", "typescript", "react", "vue", "svelte", "templ", "htmlangular"  },
     init_options = { userLanguages = { templ = "html" } },
 })
 
@@ -585,6 +637,13 @@ lspconfig.svelte.setup({
     on_attach = on_attach,
     capabilities = capabilities,
     filetypes = { "svelte" }
+})
+
+lspconfig.angularls.setup({
+    on_attach = on_attach,
+    capabilities = capabilities,
+    filetypes = { "typescript", "html", "typescriptreact", "typescript.tsx", "htmlangular" },
+    root_dir = lsp_util.root_pattern('angular.json', 'nx.json')
 })
 
 vim.filetype.add({ extension = { templ = "templ" } })
@@ -729,6 +788,11 @@ vim.keymap.set("n", "<leader>j", "<cmd>cnext<CR>zz")
 vim.keymap.set("n", "<leader>k", "<cmd>cprev<CR>zz")
 
 vim.keymap.set("n", "<leader>gs", ":G<CR>")
+
+vim.keymap.set("n", "<leader>gvc", ":Gvdiffsplit<CR>")
+vim.keymap.set("n", "<leader>gvm", ":Gvdiffsplit master...:%<CR>")
+
+vim.keymap.set('n', '<leader>u', require('undotree').toggle, { noremap = true, silent = true })
 
 ---- Map <Leader> + c to clear screen (redraw)
 vim.api.nvim_set_keymap('n', '<leader>c', '<cmd>nohlsearch<CR>', { noremap = true, silent = true })
